@@ -10,6 +10,12 @@ pipeline {
 
    agent  any
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()  // Cleans the workspace
+            }
+        }
+        
         stage('checkout') {
             steps {
                  script{
