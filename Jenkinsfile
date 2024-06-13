@@ -59,34 +59,36 @@ pipeline {
             }
         }
 
-        stage('Approval') {
-            when {
-                not {
-                    equals expected: true, actual: params.autoApprove
-                }
-            }
+        // stage('Approval') {
+        //     when {
+        //         not {
+        //             equals expected: true, actual: params.autoApprove
+        //         }
+        //     }
+        //     steps {
+        //         script {
+        //         withCredentials([[
+        //             $class: 'AmazonWebServicesCredentialsBinding',
+        //             credentialsId: 'aws_credentials',
+        //             accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+        //             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        //         ]]){
+        //                 def plan = readFile 'terraform/tfplan.txt'
+        //                 input message: "Do you want to apply the plan?",
+        //                 parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+        //            }
+        //         }
+        //     }
+        // }
+
+        stage('Apply') {
             steps {
-                script {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws_credentials',
                     accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]){
-                        def plan = readFile 'terraform/tfplan.txt'
-                        input message: "Do you want to apply the plan?",
-                        parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-                   }
-                }
-            }
-        }
-
-        stage('Apply') {
-            steps {
-                withEnv([
-                    "TF_VAR_AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}",
-                    "TF_VAR_AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}"
-                ]) {
+                ]]) {
                     sh 'pwd; cd terraform/ ; terraform apply -input=false tfplan'
                 }
             }
