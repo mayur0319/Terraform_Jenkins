@@ -20,7 +20,7 @@ pipeline {
         stage('Fetch_Cred') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', c
-                redentialsId: 'your-credentials-id', 
+                redentialsId: 'aws_credentials', 
                 accessKeyVariable: 'AWS_ACCESS_KEY_ID', s
                 ecretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     // Now you can use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as environment variables
