@@ -1,5 +1,4 @@
 pipeline {
-
     parameters {
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
     } 
@@ -8,7 +7,7 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
 
-   agent  any
+    agent any
     stages {
         stage('Clean Workspace') {
             steps {
@@ -16,45 +15,70 @@ pipeline {
             }
         }
         
-        stage('checkout') {
+        stage('Checkout') {
             steps {
-                 script{
-                        dir("terraform")
-                        {
-                            git "https://github.com/mayur0319/Terraform_Jenkins.git"
-                        }
+                script {
+                    dir("terraform") {
+                        git "https://github.com/mayur0319/Terraform_Jenkins.git"
                     }
                 }
             }
+        }
+
+        stage('Debug') {
+            steps {
+                script {
+                    sh 'echo $AWS_ACCESS_KEY_ID'
+                    sh 'echo $AWS_SECRET_ACCESS_KEY'
+                }
+            }
+        }
+
+        stage('Check AWS Credentials') {
+            steps {
+                script {
+                    sh 'aws sts get-caller-identity'
+                }
+            }
+        }
 
         stage('Plan') {
             steps {
-                sh 'pwd;cd terraform/ ; terraform init'
-                sh "pwd;cd terraform/ ; terraform plan -out tfplan"
-                sh 'pwd;cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
+                withEnv([
+                    "TF_VAR_AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}",
+                    "TF_VAR_AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}"
+                ]) {
+                    sh 'pwd; cd terraform/ ; terraform init'
+                    sh 'pwd; cd terraform/ ; terraform plan -out tfplan'
+                    sh 'pwd; cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
+                }
             }
         }
-        stage('Approval') {
-           when {
-               not {
-                   equals expected: true, actual: params.autoApprove
-               }
-           }
 
-           steps {
-               script {
+        stage('Approval') {
+            when {
+                not {
+                    equals expected: true, actual: params.autoApprove
+                }
+            }
+            steps {
+                script {
                     def plan = readFile 'terraform/tfplan.txt'
                     input message: "Do you want to apply the plan?",
-                    parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-               }
-           }
-       }
+                          parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                }
+            }
+        }
 
         stage('Apply') {
             steps {
-                sh "pwd;cd terraform/ ; terraform apply -input=false tfplan"
+                withEnv([
+                    "TF_VAR_AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}",
+                    "TF_VAR_AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}"
+                ]) {
+                    sh 'pwd; cd terraform/ ; terraform apply -input=false tfplan'
+                }
             }
         }
     }
-
-  }
+}
