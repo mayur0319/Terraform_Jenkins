@@ -9,10 +9,23 @@ pipeline {
 
     agent any
     stages {
-        stage('Check AWS CLI Installation') {
+        // stage('Check AWS CLI Installation') {
+            // steps {
+            //     script {
+            //         sh 'aws --version'
+            //     }
+            // }
+        // }
+
+        stage('Fetch_Cred') {
             steps {
-                script {
-                    sh 'aws --version'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', c
+                redentialsId: 'your-credentials-id', 
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID', s
+                ecretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    // Now you can use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as environment variables
+                    sh 'echo $AWS_ACCESS_KEY_ID'
+                    sh 'echo $AWS_SECRET_ACCESS_KEY'
                 }
             }
         }
