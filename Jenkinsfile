@@ -9,29 +9,22 @@ pipeline {
 
     agent any
     stages {
-        // stage('Check AWS CLI Installation') {
-            // steps {
-            //     script {
-            //         sh 'aws --version'
-            //     }
-            // }
-        // }
 
-        stage('Fetch_Cred') {
-            steps {
-                withCredentials([[
-                $class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: 'aws_credentials',
-                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) 
-                {
-                    // Now you can use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as environment variables
-                    sh 'echo $AWS_ACCESS_KEY_ID'
-                    sh 'echo $AWS_SECRET_ACCESS_KEY'
-                }
-            }
-        }
+        // stage('Fetch_Cred') {
+        //     steps {
+        //         withCredentials([[
+        //         $class: 'AmazonWebServicesCredentialsBinding',
+        //         credentialsId: 'aws_credentials',
+        //         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+        //         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        //         ]]) 
+        //         {
+        //             // Now you can use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as environment variables
+        //             sh 'echo $AWS_ACCESS_KEY_ID'
+        //             sh 'echo $AWS_SECRET_ACCESS_KEY'
+        //         }
+        //     }
+        // }
         
         stage('Checkout') {
             steps {
@@ -43,15 +36,6 @@ pipeline {
             }
         }
 
-        // stage('Debug') {
-        //     steps {
-        //         script {
-        //             sh 'echo $AWS_ACCESS_KEY_ID'
-        //             sh 'echo $AWS_SECRET_ACCESS_KEY'
-        //         }
-        //     }
-        // }
-
         // stage('Check AWS Credentials') {
         //     steps {
         //         script {
@@ -62,10 +46,12 @@ pipeline {
 
         stage('Plan') {
             steps {
-                withEnv([
-                    "TF_VAR_AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}",
-                    "TF_VAR_AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}"
-                ]) {
+                withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws_credentials',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
                     sh 'pwd; cd terraform/ ; terraform init'
                     sh 'pwd; cd terraform/ ; terraform plan -out tfplan'
                     sh 'pwd; cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
