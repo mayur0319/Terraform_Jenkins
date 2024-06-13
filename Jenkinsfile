@@ -27,22 +27,22 @@ pipeline {
             }
         }
 
-        stage('Debug') {
-            steps {
-                script {
-                    sh 'echo $AWS_ACCESS_KEY_ID'
-                    sh 'echo $AWS_SECRET_ACCESS_KEY'
-                }
-            }
-        }
+        // stage('Debug') {
+        //     steps {
+        //         script {
+        //             sh 'echo $AWS_ACCESS_KEY_ID'
+        //             sh 'echo $AWS_SECRET_ACCESS_KEY'
+        //         }
+        //     }
+        // }
 
-        stage('Check AWS Credentials') {
-            steps {
-                script {
-                    sh 'aws sts get-caller-identity'
-                }
-            }
-        }
+        // stage('Check AWS Credentials') {
+        //     steps {
+        //         script {
+        //             sh 'aws sts get-caller-identity'
+        //         }
+        //     }
+        // }
 
         stage('Plan') {
             steps {
