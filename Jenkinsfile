@@ -1,6 +1,6 @@
 pipeline {
     parameters {
-        booleanParam(name: 'autoApprove', defaultValue: true, description: 'Automatically run apply after generating plan?')
+        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
     } 
     // environment {
     //     AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
@@ -8,24 +8,7 @@ pipeline {
     // }
 
     agent any
-    stages {
-
-        // stage('Fetch_Cred') {
-        //     steps {
-        //         withCredentials([[
-        //         $class: 'AmazonWebServicesCredentialsBinding',
-        //         credentialsId: 'aws_credentials',
-        //         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        //         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        //         ]]) 
-        //         {
-        //             // Now you can use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as environment variables
-        //             sh 'echo $AWS_ACCESS_KEY_ID'
-        //             sh 'echo $AWS_SECRET_ACCESS_KEY'
-        //         }
-        //     }
-        // }
-        
+    stages {    
         stage('Checkout') {
             steps {
                 script {
@@ -35,14 +18,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Check AWS Credentials') {
-        //     steps {
-        //         script {
-        //             sh 'aws sts get-caller-identity'
-        //         }
-        //     }
-        // }
 
         stage('Plan') {
             steps {
@@ -59,27 +34,20 @@ pipeline {
             }
         }
 
-        // stage('Approval') {
-        //     when {
-        //         not {
-        //             equals expected: true, actual: params.autoApprove
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //         withCredentials([[
-        //             $class: 'AmazonWebServicesCredentialsBinding',
-        //             credentialsId: 'aws_credentials',
-        //             accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        //             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        //         ]]){
-        //                 def plan = readFile 'terraform/tfplan.txt'
-        //                 input message: "Do you want to apply the plan?",
-        //                 parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-        //            }
-        //         }
-        //     }
-        // }
+        stage('Approval') {
+            when {
+                not {
+                    equals expected: true, actual: params.autoApprove
+                }
+            }
+            steps {
+                script {
+                    def plan = readFile 'terraform/tfplan.txt'
+                    input message: "Do you want to apply the plan?",
+                    parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                }
+            }
+        }
 
         stage('Apply') {
             steps {
