@@ -9,9 +9,11 @@ pipeline {
 
     agent any
     stages {
-        stage('Clean Workspace') {
+        stage('Check AWS CLI Installation') {
             steps {
-                cleanWs()  // Cleans the workspace
+                script {
+                    sh 'aws --version'
+                }
             }
         }
         
