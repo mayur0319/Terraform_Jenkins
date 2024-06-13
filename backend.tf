@@ -2,6 +2,6 @@ terraform {
   backend "s3" {
     bucket = "mayur-tfstate"
     key    = "path/tfstate"
-    region = "us-east-2"
+    region = "us-east-1"
   }
 }
